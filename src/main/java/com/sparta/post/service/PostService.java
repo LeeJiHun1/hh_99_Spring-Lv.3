@@ -42,7 +42,7 @@ public class PostService {
         return postRepository.findById(id).stream().map(PostResponseDto::new).toList();
     }
 
-    @Transactional //변경 감지
+    @Transactional //변경 감지(Dirty Checking), 부모메서드인 updatePost
     public List<PostResponseDto> updatePost(Long id, String password, PostRequestDto requestDto){
         // 해당 post DB에 존재하는지 확인
         Post post = findPost(id);
@@ -73,6 +73,7 @@ public class PostService {
     }
 
     private Post findPost(Long id){
+        //findById -> Optional type -> Null Check
         return postRepository.findById(id).orElseThrow(() ->
                 new IllegalArgumentException("선택한 메모는 존재하지 않습니다.")
         );
