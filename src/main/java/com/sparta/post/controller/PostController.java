@@ -20,7 +20,7 @@ public class PostController {
         this.postService = postService;
     }
 
-    //@RequestBody는 Json 형식으로 넘겨주어야한다.
+    // @RequestBody는 Json 형식으로 넘겨주어야한다.
     @PostMapping("/post")
     public PostResponseDto createPost(@RequestBody PostRequestDto requestDto){
         return postService.createPost(requestDto);
@@ -38,14 +38,14 @@ public class PostController {
     }
 
     //@PathVariable uri -> id
-    @PutMapping("/post/{id}/{password}")
-    public List<PostResponseDto> updatePost(@PathVariable Long id, @PathVariable String password, @RequestBody PostRequestDto requestDto){
-        return postService.updatePost(id, password, requestDto);
+    @PutMapping("/post/{id}")
+    public List<PostResponseDto> updatePost(@PathVariable Long id,@RequestBody PostRequestDto requestDto){
+        return postService.updatePost(id, requestDto);
     }
 
-    @DeleteMapping("/post/{id}/{password}")
-    public String deletePost(@PathVariable Long id, @PathVariable String password, @RequestBody PostRequestDto requestDto){
-        return postService.deletePost(id, password, requestDto);
+    @DeleteMapping("/post/{id}")
+    public String deletePost(@PathVariable Long id,@RequestBody PostRequestDto requestDto){
+        return postService.deletePost(id, requestDto);
     }
 
 }

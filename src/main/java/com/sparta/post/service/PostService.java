@@ -43,12 +43,12 @@ public class PostService {
     }
 
     @Transactional //변경 감지(Dirty Checking), 부모메서드인 updatePost
-    public List<PostResponseDto> updatePost(Long id, String password, PostRequestDto requestDto){
+    public List<PostResponseDto> updatePost(Long id, PostRequestDto requestDto){
         // 해당 post DB에 존재하는지 확인
         Post post = findPost(id);
 
         // 비밀번호 확인
-        if(!password.equals(requestDto.getPassword()))
+        if(!post.getPassword().equals(requestDto.getPassword()))
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 
         // post 내용 수정
@@ -58,12 +58,12 @@ public class PostService {
     }
 
     // deleted 메서드에 @Transactional 적용되어 있음
-    public String deletePost(Long id, String password, PostRequestDto requestDto){
+    public String deletePost(Long id, PostRequestDto requestDto){
         // 해당 post DB에 존재하는지 확인
         Post post = findPost(id);
 
         // 비밀번호 확인
-        if(!password.equals(requestDto.getPassword()))
+        if(!post.getPassword().equals(requestDto.getPassword()))
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 
         //post 삭제
