@@ -2,10 +2,13 @@ package com.sparta.post.service;
 
 import com.sparta.post.dto.PostRequestDto;
 import com.sparta.post.dto.PostResponseDto;
+import com.sparta.post.entity.Message;
 import com.sparta.post.entity.Post;
 import com.sparta.post.jwt.JwtUtil;
 import com.sparta.post.repository.PostRepository;
 import io.jsonwebtoken.Claims;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -86,8 +89,11 @@ public class PostService {
         return postRepository.findById(id).stream().map(PostResponseDto::new).toList();
     }
 
-    // deleted 메서드에 @Transactional 적용되어 있음
-    public String deletePost(Long id, String tokenValue){
+    public ResponseEntity<Message> deletePost(Long id, String tokenValue){
+
+        Message msg = new Message();
+        msg.setStatus(200);
+        msg.setMsg("게시글 삭제 성공");
 
         // JWT 토큰 substring
         String token = jwtUtil.substringToken(tokenValue);
@@ -111,8 +117,36 @@ public class PostService {
         //post 삭제
         postRepository.delete(post);
 
-        return "{\"msg\":\"게시글 삭제 성공\",\"statusCode\":200}";
+        return new ResponseEntity<>(msg, null, HttpStatus.OK);
     }
+
+    // deleted 메서드에 @Transactional 적용되어 있음
+//    public String deletePost(Long id, String tokenValue){
+//
+//        // JWT 토큰 substring
+//        String token = jwtUtil.substringToken(tokenValue);
+//
+//        // 토큰 검증
+//        if(!jwtUtil.validateToken(token)){
+//            throw new IllegalArgumentException("Token error");
+//        }
+//
+//        // 해당 post DB에 존재하는지 확인
+//        Post post = findPost(id);
+//
+//        // 해당 사용자(username)가 작성한 게시글인지 확인
+//        // setSubject(username)
+//        Claims info = jwtUtil.getUserInfoFromToken(token);
+//        String username = info.getSubject();
+//        if(!username.equals(post.getUsername())){
+//            throw new IllegalArgumentException("사용자 정보가 없습니다.");
+//        }
+//
+//        //post 삭제
+//        postRepository.delete(post);
+//
+//        return "{\"msg\":\"게시글 삭제 성공\",\"statusCode\":200}";
+//    }
 
     private Post findPost(Long id){
         //findById -> Optional type -> Null Check
