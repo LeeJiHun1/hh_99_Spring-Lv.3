@@ -3,7 +3,9 @@ package com.sparta.post.service;
 import com.sparta.post.dto.PostRequestDto;
 import com.sparta.post.dto.PostResponseDto;
 import com.sparta.post.entity.Post;
+import com.sparta.post.jwt.JwtUtil;
 import com.sparta.post.repository.PostRepository;
+import io.jsonwebtoken.Claims;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,18 +14,31 @@ import java.util.List;
 @Service
 public class PostService {
 
-    // 비밀번호 확인 기능 추가 필요
-
     //멤버 변수 선언
     private final PostRepository postRepository;
+    private final JwtUtil jwtUtil;
 
-    public PostService(PostRepository postRepository) {
+    public PostService(PostRepository postRepository, JwtUtil jwtUtil) {
         this.postRepository = postRepository;
+        this.jwtUtil = jwtUtil;
     }
 
-    public PostResponseDto createPost(PostRequestDto requestDto){
+    public PostResponseDto createPost(PostRequestDto requestDto, String tokenValue){
+
+        // JWT 토큰 substring
+        String token = jwtUtil.substringToken(tokenValue);
+
+        // 토큰 검증
+        if(!jwtUtil.validateToken(token)){
+            throw new IllegalArgumentException("Token error");
+        }
+
+        //username 가져오기
+        Claims info = jwtUtil.getUserInfoFromToken(token);
+        String username = info.getSubject();
+
         //RequestDto -> Entity
-        Post post = new Post(requestDto);
+        Post post = new Post(requestDto,username);
 
         //DB 저장
         Post savePost = postRepository.save(post);
@@ -34,7 +49,7 @@ public class PostService {
 
     public List<PostResponseDto> getPosts(){
         //DB 조회
-        return postRepository.findAll().stream().map(PostResponseDto::new).toList();
+        return postRepository.findAllByOrderByCreatedAtDesc().stream().map(PostResponseDto::new).toList();
     }
 
     public List<PostResponseDto> getPost(Long id){
@@ -43,13 +58,27 @@ public class PostService {
     }
 
     @Transactional //변경 감지(Dirty Checking), 부모메서드인 updatePost
-    public List<PostResponseDto> updatePost(Long id, PostRequestDto requestDto){
-        // 해당 post DB에 존재하는지 확인
+    public List<PostResponseDto> updatePost(Long id, PostRequestDto requestDto, String tokenValue){
+
+        // JWT 토큰 substring
+        String token = jwtUtil.substringToken(tokenValue);
+
+        // 토큰 검증
+        if(!jwtUtil.validateToken(token)){
+            throw new IllegalArgumentException("Token error");
+        }
+
+        // 해당 post DB에 존재하는지 확인 수정필요
         Post post = findPost(id);
 
-        // 비밀번호 확인
-        if(!post.getPassword().equals(requestDto.getPassword()))
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        // 해당 사용자(username)가 작성한 게시글인지 확인
+        // setSubject(username)
+        Claims info = jwtUtil.getUserInfoFromToken(token);
+        String username = info.getSubject();
+
+        if(!username.equals(post.getUsername())){
+            throw new IllegalArgumentException("사용자 정보가 없습니다.");
+        }
 
         // post 내용 수정
         post.update(requestDto);
@@ -58,18 +87,31 @@ public class PostService {
     }
 
     // deleted 메서드에 @Transactional 적용되어 있음
-    public String deletePost(Long id, PostRequestDto requestDto){
+    public String deletePost(Long id, String tokenValue){
+
+        // JWT 토큰 substring
+        String token = jwtUtil.substringToken(tokenValue);
+
+        // 토큰 검증
+        if(!jwtUtil.validateToken(token)){
+            throw new IllegalArgumentException("Token error");
+        }
+
         // 해당 post DB에 존재하는지 확인
         Post post = findPost(id);
 
-        // 비밀번호 확인
-        if(!post.getPassword().equals(requestDto.getPassword()))
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        // 해당 사용자(username)가 작성한 게시글인지 확인
+        // setSubject(username)
+        Claims info = jwtUtil.getUserInfoFromToken(token);
+        String username = info.getSubject();
+        if(!username.equals(post.getUsername())){
+            throw new IllegalArgumentException("사용자 정보가 없습니다.");
+        }
 
         //post 삭제
         postRepository.delete(post);
 
-        return "{\"success\":\"true\"}";
+        return "{\"msg\":\"게시글 삭제 성공\",\"statusCode\":200}";
     }
 
     private Post findPost(Long id){
@@ -78,4 +120,5 @@ public class PostService {
                 new IllegalArgumentException("선택한 메모는 존재하지 않습니다.")
         );
     }
+
 }
