@@ -35,8 +35,5 @@ public class Comment extends Timestamped {
         this.content = requestDto.getContent();
     }
 
-    @Override
-    public String toString(){
-        return "id : "+this.id+",\ncontent : "+this.content+" ,\n createdAt : "+this.getCreatedAt()+",\n modifedAt : "+ this.getModifiedAt()+",\n username : "+this.username;
-    }
+    // post가 출력이 안되어야함. dto 하나 만들어서 post 빼고 입력받고 Responsedto에도 해당 dto list 가져옴
 }

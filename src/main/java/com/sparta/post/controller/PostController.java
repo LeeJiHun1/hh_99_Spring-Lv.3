@@ -36,13 +36,7 @@ public class PostController {
 
     @GetMapping("/posts")
     public List<PostResponseDto> getPosts(){
-        List<Post> postList = postService.getPosts();
-        List<PostResponseDto> postResponseDtoList = new ArrayList<>();
-        for(Post post : postList){
-            PostResponseDto postRes = new PostResponseDto(post);
-            postResponseDtoList.add(postRes);
-        }
-        return postResponseDtoList;
+        return postService.getPosts();
     }
 
     // @RequestBody -> Json 기반의 메시지를 사용하는 요청의 경우

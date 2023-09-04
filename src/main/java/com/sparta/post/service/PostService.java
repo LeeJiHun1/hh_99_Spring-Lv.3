@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -49,10 +50,17 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<Post> getPosts(){
+    public List<PostResponseDto> getPosts(){
         // comment : post  -> N : 1
         // commentList -> postId 기준으로 불러온다.
-        return postRepository.findAllByOrderByCreatedAtDesc();
+        List<Post> postList = postRepository.findAll();
+        List<PostResponseDto> postResponseDtoList = new ArrayList<>();
+        for(Post post : postList){
+            PostResponseDto postRes = new PostResponseDto(post);
+            postResponseDtoList.add(postRes);
+        }
+
+        return postResponseDtoList;
         //return postRepository.findAllByOrderByCreatedAtDesc().stream().map(PostResponseDto::new).toList();
     }
 
@@ -114,6 +122,7 @@ public class PostService {
         // setSubject(username)
         Claims info = jwtUtil.getUserInfoFromToken(token);
         String username = info.getSubject();
+
         if(!username.equals(post.getUsername())){
             throw new IllegalArgumentException("사용자 정보가 없습니다.");
         }

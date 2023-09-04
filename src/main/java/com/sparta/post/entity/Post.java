@@ -1,5 +1,6 @@
 package com.sparta.post.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.sparta.post.dto.PostRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -28,6 +29,7 @@ public class Post extends Timestamped{
     private String content;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
+    @JsonBackReference
     private List<Comment> comments = new ArrayList<>();
 
     public Post(PostRequestDto requestDto, String username) {
@@ -35,7 +37,6 @@ public class Post extends Timestamped{
         this.content = requestDto.getContent();
         this.username = username;
     }
-
 
     public void update(PostRequestDto requestDto){
         this.title = requestDto.getTitle();

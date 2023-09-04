@@ -2,10 +2,7 @@ package com.sparta.post.service;
 
 import com.sparta.post.dto.CommentRequestDto;
 import com.sparta.post.dto.CommentResponseDto;
-import com.sparta.post.entity.Comment;
-import com.sparta.post.entity.Message;
-import com.sparta.post.entity.Post;
-import com.sparta.post.entity.User;
+import com.sparta.post.entity.*;
 import com.sparta.post.jwt.JwtUtil;
 import com.sparta.post.repository.CommentRepository;
 import com.sparta.post.repository.PostRepository;
@@ -82,9 +79,9 @@ public class CommentService {
         } else{
             return new ResponseEntity<>(new Message(400, "comment란은 비워두면 안됩니다."), null, HttpStatus.BAD_REQUEST);
         }
-
+        System.out.println(user.getRole());
         if(user.getRole().equals("ADMIN")){
-
+            System.out.println("I'M ADMIN");
         } else if(!comment.getUsername().equals(user.getUsername()) ){
             return new ResponseEntity<>(new Message(400, "작성자만 삭제/수정할 수 있습니다."), null, HttpStatus.BAD_REQUEST);
         }
@@ -125,8 +122,7 @@ public class CommentService {
         } else {
             return new ResponseEntity<>(new Message(400, "댓글 상태가 이상합니다."), null, HttpStatus.BAD_REQUEST);
         }
-        if(user.getRole().equals("ADMIN")){
-
+        if(user.getRole().equals(UserRoleEnum.ADMIN)){
         } else if(!comment.getUsername().equals(user.getUsername()) ){
             return new ResponseEntity<>(new Message(400, "작성자만 삭제/수정할 수 있습니다."), null, HttpStatus.BAD_REQUEST);
         }

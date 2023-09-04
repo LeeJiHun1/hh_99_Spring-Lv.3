@@ -19,8 +19,8 @@ public class PostResponseDto {
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
-    private String comments;
-
+  //  private String comments;
+    private List<ForResponseComment> comments = new ArrayList<>();
 //    private List<CommentResponseDto> commentResponseDto = new ArrayList<>();
 
     public PostResponseDto(Post post) {
@@ -31,10 +31,14 @@ public class PostResponseDto {
         this.createdAt = post.getCreatedAt();
         this.modifiedAt = post.getModifiedAt();
         StringBuilder sb = new StringBuilder();
-        for(Comment cm : post.getComments()){
-            sb.append(cm.toString());
+       // for(Comment cm : post.getComments()){
+      //      sb.append(cm.toString());
+     //   }
+      //  this.comments = sb.toString(); //new ArrayList<Comment>(post.getComments());
+       // System.out.println(comments);
+        for(Comment comment : post.getComments()){
+            ForResponseComment cm = new ForResponseComment(comment);
+            comments.add(cm);
         }
-        this.comments = sb.toString(); //new ArrayList<Comment>(post.getComments());
-        System.out.println(comments);
     }
 }
