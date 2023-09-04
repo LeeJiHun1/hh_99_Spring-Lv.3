@@ -12,13 +12,9 @@ import lombok.Setter;
 @Table(name = "comment")
 @NoArgsConstructor
 public class Comment extends Timestamped {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "postId", nullable = false)
-    private Long postId;
 
     @Column(name = "content", nullable = false)
     private String content;
@@ -27,16 +23,20 @@ public class Comment extends Timestamped {
     private String username;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "postId")
+    @JoinColumn(name = "post_id")
     private Post post;
 
     public Comment(CommentRequestDto requestDto, String username) {
-        this.postId = requestDto.getPostId();
         this.content = requestDto.getContent();
         this.username = username;
     }
 
     public void update(CommentRequestDto requestDto) {
         this.content = requestDto.getContent();
+    }
+
+    @Override
+    public String toString(){
+        return "id : "+this.id+",\ncontent : "+this.content+" ,\n createdAt : "+this.getCreatedAt()+",\n modifedAt : "+ this.getModifiedAt()+",\n username : "+this.username;
     }
 }

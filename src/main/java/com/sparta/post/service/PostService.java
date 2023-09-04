@@ -1,7 +1,6 @@
 package com.sparta.post.service;
 
-import com.sparta.post.dto.CommentResponseDto;
-import com.sparta.post.dto.PostCommentResponseDto;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sparta.post.dto.PostRequestDto;
 import com.sparta.post.dto.PostResponseDto;
 import com.sparta.post.entity.Message;
@@ -16,9 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,17 +26,14 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final JwtUtil jwtUtil;
 
-    public ResponseEntity<?>  createPost(PostRequestDto requestDto, String tokenValue){
-
+    public ResponseEntity<?>  createPost(PostRequestDto requestDto, String tokenValue) {
         // JWT 토큰 substring
         String token = jwtUtil.substringToken(tokenValue);
-
         // 토큰 검증
         if(!jwtUtil.validateToken(token)){
             Message msg = new Message(400, "토큰이 유효하지 않습니다.");
             return new ResponseEntity<>(msg, null, HttpStatus.BAD_REQUEST);
         }
-
         //username 가져오기
         Claims info = jwtUtil.getUserInfoFromToken(token);
         String username = info.getSubject();
@@ -55,35 +49,19 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostCommentResponseDto> getPosts(){
+    public List<Post> getPosts(){
         // comment : post  -> N : 1
         // commentList -> postId 기준으로 불러온다.
-        List<Post> postList = postRepository.findAllByOrderByCreatedAtDesc();
-        List<PostCommentResponseDto> postCommentResponseDto = new ArrayList<>();
-
-        for (Post post : postList) {
-            postCommentResponseDto.add(new PostCommentResponseDto(post,
-                    commentRepository.findAllByPostIdOrderByCreatedAtDesc(post.getId())
-                            .stream()
-                            .map(CommentResponseDto::new)
-                            .toList()));
-        }
-
-        return postCommentResponseDto;
+        return postRepository.findAllByOrderByCreatedAtDesc();
         //return postRepository.findAllByOrderByCreatedAtDesc().stream().map(PostResponseDto::new).toList();
     }
 
     @Transactional(readOnly = true)
-    public PostCommentResponseDto getPost(Long id){
+    public PostResponseDto getPost(Long id) {
         // id 로 조회
         Post post = findPost(id);
-        
         // 새로운 Dto 로 수정할 부분 최소화
-        return new PostCommentResponseDto(post,
-                commentRepository.findAllByPostIdOrderByCreatedAtDesc(id)
-                        .stream()
-                        .map(CommentResponseDto::new)
-                        .toList());
+        return new PostResponseDto(post);
     }
 
     @Transactional //변경 감지(Dirty Checking), 부모메서드인 updatePost
@@ -113,7 +91,7 @@ public class PostService {
         // post 내용 수정
         post.update(requestDto);
 
-        return new ResponseEntity<>(postRepository.findById(id).stream().map(PostResponseDto::new).toList()
+        return new ResponseEntity<>(postRepository.findById(id)
                 ,null, HttpStatus.OK);
     }
 

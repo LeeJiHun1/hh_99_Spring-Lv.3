@@ -1,14 +1,17 @@
 package com.sparta.post.controller;
 
-import com.sparta.post.dto.PostCommentResponseDto;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sparta.post.dto.PostRequestDto;
 import com.sparta.post.dto.PostResponseDto;
 import com.sparta.post.entity.Message;
+import com.sparta.post.entity.Post;
 import com.sparta.post.jwt.JwtUtil;
 import com.sparta.post.service.PostService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -27,18 +30,24 @@ public class PostController {
     // @RequestBody 는 Json 형식으로 넘겨주어야한다.
     @PostMapping("/post")
     public ResponseEntity<?> createPost(@RequestBody PostRequestDto requestDto,
-                                      @CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue){
+                                      @CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue)  {
         return postService.createPost(requestDto,tokenValue);
     }
 
     @GetMapping("/posts")
-    public List<PostCommentResponseDto> getPosts(){
-        return postService.getPosts();
+    public List<PostResponseDto> getPosts(){
+        List<Post> postList = postService.getPosts();
+        List<PostResponseDto> postResponseDtoList = new ArrayList<>();
+        for(Post post : postList){
+            PostResponseDto postRes = new PostResponseDto(post);
+            postResponseDtoList.add(postRes);
+        }
+        return postResponseDtoList;
     }
 
     // @RequestBody -> Json 기반의 메시지를 사용하는 요청의 경우
     @GetMapping("/post/{id}")
-    public PostCommentResponseDto getPost(@PathVariable Long id){
+    public PostResponseDto getPost(@PathVariable Long id) {
         return postService.getPost(id);
     }
 

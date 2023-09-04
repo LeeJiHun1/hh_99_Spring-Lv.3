@@ -16,13 +16,11 @@ public class CommentResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 
-
     public CommentResponseDto(Comment saveComment) {
         this.id = saveComment.getId();
         this.content = saveComment.getContent();
         this.username = saveComment.getUsername();
         this.createdAt = saveComment.getCreatedAt();
         this.modifiedAt = saveComment.getModifiedAt();
-
     }
 }

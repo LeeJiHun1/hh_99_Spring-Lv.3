@@ -20,18 +20,18 @@ public class CommentController {
 
     @PostMapping("/comment")
     public ResponseEntity<?> createComment(@RequestBody CommentRequestDto requestDto,
-                                            @CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue){
+                                           @CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue) {
         return commentService.createComment(requestDto, tokenValue);
     }
 
     @PutMapping("/comment/{id}")
     public ResponseEntity<?> updateComment(@PathVariable Long id, @RequestBody CommentRequestDto requestDto,
-                                            @CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue){
+                                           @CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue) {
         return commentService.updateComment(id, requestDto, tokenValue);
     }
 
     @DeleteMapping("/comment/{id}")
-    public ResponseEntity<?> deleteComment(@PathVariable Long id, @CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue){
+    public ResponseEntity<?> deleteComment(@PathVariable Long id, @CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue) {
         return commentService.deleteComment(id, tokenValue);
     }
 }

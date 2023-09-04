@@ -4,9 +4,12 @@ import com.sparta.post.dto.CommentRequestDto;
 import com.sparta.post.dto.CommentResponseDto;
 import com.sparta.post.entity.Comment;
 import com.sparta.post.entity.Message;
+import com.sparta.post.entity.Post;
+import com.sparta.post.entity.User;
 import com.sparta.post.jwt.JwtUtil;
 import com.sparta.post.repository.CommentRepository;
 import com.sparta.post.repository.PostRepository;
+import com.sparta.post.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,29 +25,31 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
     public ResponseEntity<?> createComment(CommentRequestDto requestDto, String tokenValue) {
         String token = jwtUtil.substringToken(tokenValue);
-
         if(!jwtUtil.validateToken(token)){
             Message msg = new Message(400, "토큰이 유효하지 않습니다.");
             return new ResponseEntity<>(msg, null, HttpStatus.BAD_REQUEST);
         }
-
         // DB에 해당 PostId 확인
         findPost(requestDto.getPostId());
-
         // username 가져오기
         Claims info = jwtUtil.getUserInfoFromToken(token);
         String username = info.getSubject();
-
         //RequestDto -> Entity
         Comment comment = new Comment(requestDto, username);
-
         //DB 저장
         Comment saveComment = commentRepository.save(comment);
 
+        Post post = postRepository.findById(requestDto.getPostId()).orElseThrow(() ->
+                new IllegalArgumentException("토큰이 이상합니다.")
+        );
+        post.addCommentList(comment);
+        System.out.println("게시글에 댓글이 추가되었습니다.");
+        Post savePost = postRepository.save(post);
         //Entity -> ResponseDto
         return new ResponseEntity<>(new CommentResponseDto(saveComment),null, HttpStatus.OK );
     }
@@ -64,11 +69,26 @@ public class CommentService {
         // 해당 유저의 댓굴 id 값이 DB 에 존재하는지 확인
         Optional<Comment> checkComment = commentRepository.findById(id);
         Comment comment;
+
+        Claims info = jwtUtil.getUserInfoFromToken(token);
+        String username = info.getSubject();
+
+        User user = userRepository.findByUsername(username).orElseThrow(()->
+                new IllegalArgumentException("토큰이 이상합니다.")
+        );
+
         if (checkComment.isPresent()) {
             comment = checkComment.get();
-        } else {
-            return new ResponseEntity<>(new Message(400, "작성자만 수정할 수 있습니다."), null, HttpStatus.BAD_REQUEST);
+        } else{
+            return new ResponseEntity<>(new Message(400, "comment란은 비워두면 안됩니다."), null, HttpStatus.BAD_REQUEST);
         }
+
+        if(user.getRole().equals("ADMIN")){
+
+        } else if(!comment.getUsername().equals(user.getUsername()) ){
+            return new ResponseEntity<>(new Message(400, "작성자만 삭제/수정할 수 있습니다."), null, HttpStatus.BAD_REQUEST);
+        }
+
 
          // comment 수정
         comment.update(requestDto);
@@ -92,12 +112,24 @@ public class CommentService {
         // 해당 유저의 댓굴 id 값이 DB 에 존재하는지 확인
         Optional<Comment> checkComment = commentRepository.findById(id);
         Comment comment;
+
+        Claims info = jwtUtil.getUserInfoFromToken(token);
+        String username = info.getSubject();
+
+        User user = userRepository.findByUsername(username).orElseThrow(()->
+                new IllegalArgumentException("토큰이 이상합니다.")
+        );
+
         if (checkComment.isPresent()) {
             comment = checkComment.get();
         } else {
-            return new ResponseEntity<>(new Message(400, "작성자만 삭제할 수 있습니다."), null, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new Message(400, "댓글 상태가 이상합니다."), null, HttpStatus.BAD_REQUEST);
         }
+        if(user.getRole().equals("ADMIN")){
 
+        } else if(!comment.getUsername().equals(user.getUsername()) ){
+            return new ResponseEntity<>(new Message(400, "작성자만 삭제/수정할 수 있습니다."), null, HttpStatus.BAD_REQUEST);
+        }
         // comment 삭제
         commentRepository.delete(comment);
 
