@@ -5,11 +5,12 @@ import lombok.Data;
 @Data
 public class Message {
 
-    private int status;
+    private int statusCode;
     private String msg;
 
-    public Message(){
-        this.status = 200;
-        this.msg = null;
+    public Message(int statusCode, String msg) {
+        this.statusCode = statusCode;
+        this.msg = msg;
     }
+
 }

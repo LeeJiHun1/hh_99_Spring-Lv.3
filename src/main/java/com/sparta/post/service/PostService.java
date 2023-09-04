@@ -1,39 +1,43 @@
 package com.sparta.post.service;
 
+import com.sparta.post.dto.CommentResponseDto;
+import com.sparta.post.dto.PostCommentResponseDto;
 import com.sparta.post.dto.PostRequestDto;
 import com.sparta.post.dto.PostResponseDto;
 import com.sparta.post.entity.Message;
 import com.sparta.post.entity.Post;
 import com.sparta.post.jwt.JwtUtil;
+import com.sparta.post.repository.CommentRepository;
 import com.sparta.post.repository.PostRepository;
 import io.jsonwebtoken.Claims;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class PostService {
 
     //멤버 변수 선언
     private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
     private final JwtUtil jwtUtil;
 
-    public PostService(PostRepository postRepository, JwtUtil jwtUtil) {
-        this.postRepository = postRepository;
-        this.jwtUtil = jwtUtil;
-    }
-
-    public PostResponseDto createPost(PostRequestDto requestDto, String tokenValue){
+    public ResponseEntity<?>  createPost(PostRequestDto requestDto, String tokenValue){
 
         // JWT 토큰 substring
         String token = jwtUtil.substringToken(tokenValue);
 
         // 토큰 검증
         if(!jwtUtil.validateToken(token)){
-            throw new IllegalArgumentException("Token error");
+            Message msg = new Message(400, "토큰이 유효하지 않습니다.");
+            return new ResponseEntity<>(msg, null, HttpStatus.BAD_REQUEST);
         }
 
         //username 가져오기
@@ -47,28 +51,51 @@ public class PostService {
         Post savePost = postRepository.save(post);
 
         //Entity -> ResponseDto
-        return new PostResponseDto(savePost);
+        return new ResponseEntity<>(new PostResponseDto(savePost),null, HttpStatus.OK);
     }
 
-    public List<PostResponseDto> getPosts(){
-        //DB 조회
-        return postRepository.findAllByOrderByCreatedAtDesc().stream().map(PostResponseDto::new).toList();
+    @Transactional(readOnly = true)
+    public List<PostCommentResponseDto> getPosts(){
+        // comment : post  -> N : 1
+        // commentList -> postId 기준으로 불러온다.
+        List<Post> postList = postRepository.findAllByOrderByCreatedAtDesc();
+        List<PostCommentResponseDto> postCommentResponseDto = new ArrayList<>();
+
+        for (Post post : postList) {
+            postCommentResponseDto.add(new PostCommentResponseDto(post,
+                    commentRepository.findAllByPostIdOrderByCreatedAtDesc(post.getId())
+                            .stream()
+                            .map(CommentResponseDto::new)
+                            .toList()));
+        }
+
+        return postCommentResponseDto;
+        //return postRepository.findAllByOrderByCreatedAtDesc().stream().map(PostResponseDto::new).toList();
     }
 
-    public List<PostResponseDto> getPost(Long id){
+    @Transactional(readOnly = true)
+    public PostCommentResponseDto getPost(Long id){
         // id 로 조회
-        return postRepository.findById(id).stream().map(PostResponseDto::new).toList();
+        Post post = findPost(id);
+        
+        // 새로운 Dto 로 수정할 부분 최소화
+        return new PostCommentResponseDto(post,
+                commentRepository.findAllByPostIdOrderByCreatedAtDesc(id)
+                        .stream()
+                        .map(CommentResponseDto::new)
+                        .toList());
     }
 
     @Transactional //변경 감지(Dirty Checking), 부모메서드인 updatePost
-    public List<PostResponseDto> updatePost(Long id, PostRequestDto requestDto, String tokenValue){
+    public ResponseEntity<?> updatePost(Long id, PostRequestDto requestDto, String tokenValue){
 
         // JWT 토큰 substring
         String token = jwtUtil.substringToken(tokenValue);
 
         // 토큰 검증
         if(!jwtUtil.validateToken(token)){
-            throw new IllegalArgumentException("Token error");
+            Message msg = new Message(400, "토큰이 유효하지 않습니다.");
+            return new ResponseEntity<>(msg, null, HttpStatus.BAD_REQUEST);
         }
 
         // 해당 post DB에 존재하는지 확인 수정필요
@@ -86,21 +113,20 @@ public class PostService {
         // post 내용 수정
         post.update(requestDto);
 
-        return postRepository.findById(id).stream().map(PostResponseDto::new).toList();
+        return new ResponseEntity<>(postRepository.findById(id).stream().map(PostResponseDto::new).toList()
+                ,null, HttpStatus.OK);
     }
 
     public ResponseEntity<Message> deletePost(Long id, String tokenValue){
 
-        Message msg = new Message();
-        msg.setStatus(200);
-        msg.setMsg("게시글 삭제 성공");
+        Message msg = new Message(200, "게시글 삭제 성공");
 
         // JWT 토큰 substring
         String token = jwtUtil.substringToken(tokenValue);
 
         // 토큰 검증
         if(!jwtUtil.validateToken(token)){
-            throw new IllegalArgumentException("Token error");
+            return new ResponseEntity<>(new Message(400, "토큰이 유효하지 않습니다."), null, HttpStatus.BAD_REQUEST);
         }
 
         // 해당 post DB에 존재하는지 확인
@@ -119,34 +145,6 @@ public class PostService {
 
         return new ResponseEntity<>(msg, null, HttpStatus.OK);
     }
-
-    // deleted 메서드에 @Transactional 적용되어 있음
-//    public String deletePost(Long id, String tokenValue){
-//
-//        // JWT 토큰 substring
-//        String token = jwtUtil.substringToken(tokenValue);
-//
-//        // 토큰 검증
-//        if(!jwtUtil.validateToken(token)){
-//            throw new IllegalArgumentException("Token error");
-//        }
-//
-//        // 해당 post DB에 존재하는지 확인
-//        Post post = findPost(id);
-//
-//        // 해당 사용자(username)가 작성한 게시글인지 확인
-//        // setSubject(username)
-//        Claims info = jwtUtil.getUserInfoFromToken(token);
-//        String username = info.getSubject();
-//        if(!username.equals(post.getUsername())){
-//            throw new IllegalArgumentException("사용자 정보가 없습니다.");
-//        }
-//
-//        //post 삭제
-//        postRepository.delete(post);
-//
-//        return "{\"msg\":\"게시글 삭제 성공\",\"statusCode\":200}";
-//    }
 
     private Post findPost(Long id){
         //findById -> Optional type -> Null Check

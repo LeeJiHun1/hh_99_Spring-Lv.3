@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class PostResponseDto {
+public class PostCommentResponseDto {
 
     private Long id;
 
@@ -19,9 +19,9 @@ public class PostResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 
-//    private List<CommentResponseDto> commentResponseDto = new ArrayList<>();
+    private List<CommentResponseDto> commentResponseDto;
 
-    public PostResponseDto(Post post) {
+    public PostCommentResponseDto(Post post, List<CommentResponseDto> commentResponseDto) {
         this.id = post.getId();
         this.title = post.getTitle();
         this.username = post.getUsername();
@@ -29,8 +29,6 @@ public class PostResponseDto {
         this.createdAt = post.getCreatedAt();
         this.modifiedAt = post.getModifiedAt();
 
+        this.commentResponseDto = commentResponseDto;
     }
-
-
-
 }

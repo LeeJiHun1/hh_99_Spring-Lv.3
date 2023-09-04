@@ -33,16 +33,4 @@ public class UserController {
         return userService.login(requestDto, res);
     }
 
-
-//    // ResponseEntity<Map>
-//    @PostMapping("/auth/signup")
-//    public String signup(@Valid @RequestBody SignupRequestDto requestDto){
-//        return userService.signup(requestDto);
-//    }
-//
-//    @PostMapping("/auth/login")
-//    public String login(@RequestBody LoginRequestDto requestDto, HttpServletResponse res){
-//        return userService.login(requestDto, res);
-//    }
-
 }

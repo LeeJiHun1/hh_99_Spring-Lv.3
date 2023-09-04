@@ -1,5 +1,6 @@
 package com.sparta.post.controller;
 
+import com.sparta.post.dto.PostCommentResponseDto;
 import com.sparta.post.dto.PostRequestDto;
 import com.sparta.post.dto.PostResponseDto;
 import com.sparta.post.entity.Message;
@@ -25,25 +26,25 @@ public class PostController {
 
     // @RequestBody 는 Json 형식으로 넘겨주어야한다.
     @PostMapping("/post")
-    public PostResponseDto createPost(@RequestBody PostRequestDto requestDto,
+    public ResponseEntity<?> createPost(@RequestBody PostRequestDto requestDto,
                                       @CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue){
         return postService.createPost(requestDto,tokenValue);
     }
 
     @GetMapping("/posts")
-    public List<PostResponseDto> getPosts(){
+    public List<PostCommentResponseDto> getPosts(){
         return postService.getPosts();
     }
 
     // @RequestBody -> Json 기반의 메시지를 사용하는 요청의 경우
     @GetMapping("/post/{id}")
-    public List<PostResponseDto> getPost(@PathVariable Long id){
+    public PostCommentResponseDto getPost(@PathVariable Long id){
         return postService.getPost(id);
     }
 
     //@PathVariable uri -> id
     @PutMapping("/post/{id}")
-    public List<PostResponseDto> updatePost(@PathVariable Long id,@RequestBody PostRequestDto requestDto,
+    public ResponseEntity<?> updatePost(@PathVariable Long id,@RequestBody PostRequestDto requestDto,
                                             @CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue){
         return postService.updatePost(id, requestDto, tokenValue);
     }
@@ -52,10 +53,5 @@ public class PostController {
     public ResponseEntity<Message> deletePost(@PathVariable Long id, @CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue){
         return postService.deletePost(id,  tokenValue);
     }
-
-//    @DeleteMapping("/post/{id}")
-//    public String deletePost(@PathVariable Long id, @CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue){
-//        return postService.deletePost(id,  tokenValue);
-//    }
 
 }
