@@ -1,6 +1,7 @@
 package com.sparta.post.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.sparta.post.dto.ForResponseComment;
 import com.sparta.post.dto.PostRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Entity // JPA가 관리할 수 있는 Entity 클래스 지정
@@ -46,4 +48,6 @@ public class Post extends Timestamped{
         this.comments.add(comment);
         comment.setPost(this);
     }
+
+
 }

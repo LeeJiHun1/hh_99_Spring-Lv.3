@@ -9,10 +9,14 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Getter
 public class PostResponseDto {
+
+
     private Long id;
     private String title;
     private String username;
@@ -24,6 +28,15 @@ public class PostResponseDto {
 //    private List<CommentResponseDto> commentResponseDto = new ArrayList<>();
 
     public PostResponseDto(Post post) {
+        Comparator<ForResponseComment> comparator = new Comparator<ForResponseComment>() {
+            @Override
+            public int compare(ForResponseComment o1, ForResponseComment o2) {
+                if(o1.getCreatedAt().isAfter(o2.getCreatedAt())) return 1;
+                else return -1;
+                // return o1 - o2 ;
+            }
+        };
+
         this.id = post.getId();
         this.title = post.getTitle();
         this.username = post.getUsername();
@@ -31,14 +44,12 @@ public class PostResponseDto {
         this.createdAt = post.getCreatedAt();
         this.modifiedAt = post.getModifiedAt();
         StringBuilder sb = new StringBuilder();
-       // for(Comment cm : post.getComments()){
-      //      sb.append(cm.toString());
-     //   }
-      //  this.comments = sb.toString(); //new ArrayList<Comment>(post.getComments());
-       // System.out.println(comments);
+        List<Comment> commentlist = new ArrayList<>(post.getComments());
+
         for(Comment comment : post.getComments()){
             ForResponseComment cm = new ForResponseComment(comment);
             comments.add(cm);
         }
+        Collections.sort(comments, comparator);
     }
 }

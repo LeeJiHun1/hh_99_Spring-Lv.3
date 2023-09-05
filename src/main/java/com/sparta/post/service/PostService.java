@@ -1,15 +1,21 @@
 package com.sparta.post.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.mysql.cj.log.Log;
 import com.sparta.post.dto.PostRequestDto;
 import com.sparta.post.dto.PostResponseDto;
 import com.sparta.post.entity.Message;
 import com.sparta.post.entity.Post;
+import com.sparta.post.entity.User;
+import com.sparta.post.entity.UserRoleEnum;
 import com.sparta.post.jwt.JwtUtil;
 import com.sparta.post.repository.CommentRepository;
 import com.sparta.post.repository.PostRepository;
+import com.sparta.post.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,6 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostService {
 
+    UserRepository userRepository;
     //멤버 변수 선언
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
@@ -53,7 +60,7 @@ public class PostService {
     public List<PostResponseDto> getPosts(){
         // comment : post  -> N : 1
         // commentList -> postId 기준으로 불러온다.
-        List<Post> postList = postRepository.findAll();
+        List<Post> postList = postRepository.findAllByOrderByCreatedAt();
         List<PostResponseDto> postResponseDtoList = new ArrayList<>();
         for(Post post : postList){
             PostResponseDto postRes = new PostResponseDto(post);
@@ -71,7 +78,6 @@ public class PostService {
         // 새로운 Dto 로 수정할 부분 최소화
         return new PostResponseDto(post);
     }
-
     @Transactional //변경 감지(Dirty Checking), 부모메서드인 updatePost
     public ResponseEntity<?> updatePost(Long id, PostRequestDto requestDto, String tokenValue){
 
@@ -92,7 +98,13 @@ public class PostService {
         Claims info = jwtUtil.getUserInfoFromToken(token);
         String username = info.getSubject();
 
-        if(!username.equals(post.getUsername())){
+        User user = userRepository.findByUsername(username).orElseThrow(() ->
+                new IllegalArgumentException("토큰이 이상합니다.")
+        );
+
+        if(user.getRole().equals(UserRoleEnum.ADMIN)){
+            System.out.println("운영자가 로그인하였습니다.");
+        }else if(!username.equals(post.getUsername())){
             throw new IllegalArgumentException("사용자 정보가 없습니다.");
         }
 
@@ -123,7 +135,12 @@ public class PostService {
         Claims info = jwtUtil.getUserInfoFromToken(token);
         String username = info.getSubject();
 
-        if(!username.equals(post.getUsername())){
+        User user = userRepository.findByUsername(username).orElseThrow(() ->
+                new IllegalArgumentException("토큰이 이상합니다.")
+        );
+        if(user.getRole().equals(UserRoleEnum.ADMIN)){
+            System.out.println("운영자가 로그인하였습니다.");
+        }else if(!username.equals(post.getUsername())){
             throw new IllegalArgumentException("사용자 정보가 없습니다.");
         }
 

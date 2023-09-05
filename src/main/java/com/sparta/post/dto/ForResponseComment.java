@@ -6,9 +6,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 
 @Getter
 public class ForResponseComment {
+
     private Long id;
 
     private String content;
@@ -25,4 +27,6 @@ public class ForResponseComment {
         this.createdAt = comment.getCreatedAt();
         this.modifiedAt = comment.getModifiedAt();
     }
+
+
 }

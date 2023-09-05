@@ -81,7 +81,6 @@ public class CommentService {
         }
         System.out.println(user.getRole());
         if(user.getRole().equals("ADMIN")){
-            System.out.println("I'M ADMIN");
         } else if(!comment.getUsername().equals(user.getUsername()) ){
             return new ResponseEntity<>(new Message(400, "작성자만 삭제/수정할 수 있습니다."), null, HttpStatus.BAD_REQUEST);
         }
