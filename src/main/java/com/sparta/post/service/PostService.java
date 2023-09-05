@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mysql.cj.log.Log;
 import com.sparta.post.dto.PostRequestDto;
 import com.sparta.post.dto.PostResponseDto;
+import com.sparta.post.dto.PostResponseListDto;
 import com.sparta.post.entity.Message;
 import com.sparta.post.entity.Post;
 import com.sparta.post.entity.User;
@@ -57,7 +58,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostResponseDto> getPosts(){
+    public PostResponseListDto getPosts(){
         // comment : post  -> N : 1
         // commentList -> postId 기준으로 불러온다.
         List<Post> postList = postRepository.findAllByOrderByCreatedAt();
@@ -66,8 +67,7 @@ public class PostService {
             PostResponseDto postRes = new PostResponseDto(post);
             postResponseDtoList.add(postRes);
         }
-
-        return postResponseDtoList;
+        return new PostResponseListDto(postResponseDtoList);
         //return postRepository.findAllByOrderByCreatedAtDesc().stream().map(PostResponseDto::new).toList();
     }
 

@@ -3,6 +3,7 @@ package com.sparta.post.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sparta.post.dto.PostRequestDto;
 import com.sparta.post.dto.PostResponseDto;
+import com.sparta.post.dto.PostResponseListDto;
 import com.sparta.post.entity.Message;
 import com.sparta.post.entity.Post;
 import com.sparta.post.jwt.JwtUtil;
@@ -35,8 +36,10 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public List<PostResponseDto> getPosts(){
-        return postService.getPosts();
+    public PostResponseListDto getPosts(){
+        PostResponseListDto dto = postService.getPosts();
+        System.out.println("hello");
+        return dto;
     }
 
     // @RequestBody -> Json 기반의 메시지를 사용하는 요청의 경우
