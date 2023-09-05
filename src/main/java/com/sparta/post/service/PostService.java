@@ -28,7 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostService {
 
-    UserRepository userRepository;
+    private final UserRepository userRepository;
     //멤버 변수 선언
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
@@ -138,6 +138,7 @@ public class PostService {
         User user = userRepository.findByUsername(username).orElseThrow(() ->
                 new IllegalArgumentException("토큰이 이상합니다.")
         );
+        System.out.println("HEHEHEHEHEHEHEHEH");
         if(user.getRole().equals(UserRoleEnum.ADMIN)){
             System.out.println("운영자가 로그인하였습니다.");
         }else if(!username.equals(post.getUsername())){

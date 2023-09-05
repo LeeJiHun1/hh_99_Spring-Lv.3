@@ -80,7 +80,8 @@ public class CommentService {
             return new ResponseEntity<>(new Message(400, "comment란은 비워두면 안됩니다."), null, HttpStatus.BAD_REQUEST);
         }
         System.out.println(user.getRole());
-        if(user.getRole().equals("ADMIN")){
+        if(user.getRole().equals(UserRoleEnum.ADMIN)){
+
         } else if(!comment.getUsername().equals(user.getUsername()) ){
             return new ResponseEntity<>(new Message(400, "작성자만 삭제/수정할 수 있습니다."), null, HttpStatus.BAD_REQUEST);
         }
